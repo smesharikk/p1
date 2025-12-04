@@ -4,31 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace кр_подготовка1
+namespace кр_1_попытка2
 {
-	using System;
-
 	public interface INumberSeries
 	{
 		int GetFirst();
 		int GetSecond();
 		int GetNext(int current, int previous);
 
-		// Внутренний итератор
-		void Iterate(int n, Action<int> action);
+		void Iterate(int n, Action<int> action); // внутренний итератор
 	}
 
-	// ---------------- РЯД ФИБОНАЧЧИ ----------------
+	
 
-	public class FibonacciSeries : INumberSeries
+	public abstract class NumberSeriesBase : INumberSeries
 	{
-		public int GetFirst() => 0;
-		public int GetSecond() => 1;
+		public abstract int GetFirst();
+		public abstract int GetSecond();
+		public abstract int GetNext(int current, int previous);
 
-		public int GetNext(int current, int previous)
-		{
-			return current + previous;
-		}
 
 		public void Iterate(int n, Action<int> action)
 		{
@@ -42,47 +36,41 @@ namespace кр_подготовка1
 			{
 				int next = GetNext(curr, prev);
 				action(next);
-
 				prev = curr;
 				curr = next;
 			}
+		}
+	}
+
+	// ---------------- РЯД ФИБОНАЧЧИ ----------------
+
+	public class FibonacciSeries : NumberSeriesBase
+	{
+		public override int GetFirst() => 0;
+		public override int GetSecond() => 1;
+
+		public override int GetNext(int current, int previous)
+		{
+			return current + previous;
 		}
 	}
 
 	// ---------------- РЯД ЭЙЛЕРА ----------------
 
-	public class EulerSeries : INumberSeries
+	public class EulerSeries : NumberSeriesBase
 	{
-		public int GetFirst() => 1;
-		public int GetSecond() => 1;
+		public override int GetFirst() => 1;
+		public override int GetSecond() => 1;
 
-		public int GetNext(int current, int previous)
+		public override int GetNext(int current, int previous)
 		{
 			return current + previous + 1;
-		}
-
-		public void Iterate(int n, Action<int> action)
-		{
-			int prev = GetFirst();
-			int curr = GetSecond();
-
-			if (n >= 1) action(prev);
-			if (n >= 2) action(curr);
-
-			for (int i = 3; i <= n; i++)
-			{
-				int next = GetNext(curr, prev);
-				action(next);
-
-				prev = curr;
-				curr = next;
-			}
 		}
 	}
 
 	// ---------------- ДЕКОРАТОР ОТРИЦАТЕЛЬНОГО РЯДА ----------------
 
-	public class NegativeSeries : INumberSeries
+	public class NegativeSeries : NumberSeriesBase
 	{
 		private readonly INumberSeries series;
 
@@ -91,34 +79,15 @@ namespace кр_подготовка1
 			this.series = series;
 		}
 
-		public int GetFirst() => -series.GetFirst();
+		public override int GetFirst() => -series.GetFirst();
 
-		public int GetSecond() => -series.GetSecond();
+		public override int GetSecond() => -series.GetSecond();
 
-		public int GetNext(int current, int previous)
+		public override int GetNext(int current, int previous)
 		{
-			// current и previous уже отрицательные, поэтому их знак меняем обратно
-			int next = series.GetNext(-current, -previous);
-			return -next;
-		}
-
-		public void Iterate(int n, Action<int> action)
-		{
-			int prev = GetFirst();
-			int curr = GetSecond();
-
-			if (n >= 1) action(prev);
-			if (n >= 2) action(curr);
-
-			for (int i = 3; i <= n; i++)
-			{
-				int next = GetNext(curr, prev);
-				action(next);
-
-				prev = curr;
-				curr = next;
-			}
+		
+			int originalNext = series.GetNext(-current, -previous);
+			return -originalNext;
 		}
 	}
-
 }
