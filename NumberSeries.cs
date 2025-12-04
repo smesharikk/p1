@@ -1,93 +1,29 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using кр_1_попытка2;
 
-namespace кр_1_попытка2
+class Program
 {
-	public interface INumberSeries
+	static void Main()
 	{
-		int GetFirst();
-		int GetSecond();
-		int GetNext(int current, int previous);
+		INumberSeries fib = new FibonacciSeries();
+		INumberSeries euler = new EulerSeries();
 
-		void Iterate(int n, Action<int> action); // внутренний итератор
-	}
+		int N = 10;
 
-	
+		Console.WriteLine("Первые 10 чисел ряда Фибоначчи:");
+		fib.Iterate(N, x => Console.Write(x + " "));
 
-	public abstract class NumberSeriesBase : INumberSeries
-	{
-		public abstract int GetFirst();
-		public abstract int GetSecond();
-		public abstract int GetNext(int current, int previous);
+		Console.WriteLine("\n\nПервые 10 чисел ряда Эйлера:");
+		euler.Iterate(N, x => Console.Write(x + " "));
 
+		Console.WriteLine("\n\nОтрицательный ряд Фибоначчи:");
+		INumberSeries negFib = new NegativeSeries(fib);
+		negFib.Iterate(N, x => Console.Write(x + " "));
 
-		public void Iterate(int n, Action<int> action)
-		{
-			int prev = GetFirst();
-			int curr = GetSecond();
+		Console.WriteLine("\n\nОтрицательный ряд Эйлера:");
+		INumberSeries negEuler = new NegativeSeries(euler);
+		negEuler.Iterate(N, x => Console.Write(x + " "));
 
-			if (n >= 1) action(prev);
-			if (n >= 2) action(curr);
-
-			for (int i = 3; i <= n; i++)
-			{
-				int next = GetNext(curr, prev);
-				action(next);
-				prev = curr;
-				curr = next;
-			}
-		}
-	}
-
-	// ---------------- РЯД ФИБОНАЧЧИ ----------------
-
-	public class FibonacciSeries : NumberSeriesBase
-	{
-		public override int GetFirst() => 0;
-		public override int GetSecond() => 1;
-
-		public override int GetNext(int current, int previous)
-		{
-			return current + previous;
-		}
-	}
-
-	// ---------------- РЯД ЭЙЛЕРА ----------------
-
-	public class EulerSeries : NumberSeriesBase
-	{
-		public override int GetFirst() => 1;
-		public override int GetSecond() => 1;
-
-		public override int GetNext(int current, int previous)
-		{
-			return current + previous + 1;
-		}
-	}
-
-	// ---------------- ДЕКОРАТОР ОТРИЦАТЕЛЬНОГО РЯДА ----------------
-
-	public class NegativeSeries : NumberSeriesBase
-	{
-		private readonly INumberSeries series;
-
-		public NegativeSeries(INumberSeries series)
-		{
-			this.series = series;
-		}
-
-		public override int GetFirst() => -series.GetFirst();
-
-		public override int GetSecond() => -series.GetSecond();
-
-		public override int GetNext(int current, int previous)
-		{
-		
-			int originalNext = series.GetNext(-current, -previous);
-			return -originalNext;
-		}
+		Console.WriteLine();
 	}
 }
